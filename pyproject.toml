@@ -1,7 +1,7 @@
 [project]
 name = "urban-food-delivery-eta-predictor"
 version = "0.1.0"
-description = "Add your description here"
+description = "Predicting food delivery ETAs."
 requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.163.1",
