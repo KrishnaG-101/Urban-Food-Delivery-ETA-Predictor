@@ -1,0 +1,21 @@
+[project]
+name = "urban-food-delivery-eta-predictor"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.163.1",
+    "ipykernel>=7.4.0",
+    "jupyter>=1.1.1",
+    "lightgbm>=4.7.0",
+    "matplotlib>=3.11.2",
+    "numpy>=2.4.6",
+    "pandas>=3.1.1",
+    "pydantic>=2.14.3",
+    "pytest>=9.2.0",
+    "requests>=2.34.2",
+    "scikit-learn>=1.9.1",
+    "seaborn>=0.13.2",
+    "uvicorn[standard]>=0.54.0",
+    "xgboost>=3.2.0",
+]
