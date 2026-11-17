@@ -132,6 +132,10 @@ $$\mathbf{\text{Test RMSE: } 3.8900 \text{ min}} \quad|\quad \mathbf{\text{Test 
 
 ```text
 Urban-Food-Delivery-ETA-Predictor/
+├── assets/                            # Cloud deployment proof & verification screenshots
+│   ├── live_swagger_predict.png       # Live cloud Swagger UI interactive prediction
+│   ├── render_deploy_logs.png         # Zero-error Render Docker build & deploy logs
+│   └── render_service_overview.png    # Live healthy web service overview dashboard
 ├── data/
 │   └── raw/
 │       ├── food_delivery.csv          # Primary training dataset (45,593 rows)
@@ -141,7 +145,7 @@ Urban-Food-Delivery-ETA-Predictor/
 │   └── model.bin                      # Serialized pipeline bundle (Pipeline + schema + metrics)
 ├── tests/
 │   ├── .gitkeep                       # Tracks test directory in git
-│   └── test_api.py                    # Automated test suite (health, predict, bounds, stress)
+│   └── test_api.py                    # Automated test suite (health, root, predict, bounds, stress)
 ├── Dockerfile                         # Production multi-stage Docker container specification
 ├── notebook.ipynb                     # Complete Jupyter notebook (Sections 1 through 7 executed)
 ├── predict.py                         # Shared cleaning, feature engineering & inference module
@@ -214,7 +218,26 @@ Interactive Swagger API documentation is available at: **`http://localhost:9696/
 
 ## 7. API Usage & `curl` Examples
 
-### 7.1 Health Check (`GET /health`)
+### 7.1 Service Root Overview (`GET /`)
+**Request:**
+```bash
+curl -X GET "http://localhost:9696/"
+```
+**Response:**
+```json
+{
+  "service": "Urban Food Delivery ETA Predictor",
+  "version": "1.0.0",
+  "status": "running",
+  "endpoints": {
+    "health": "/health",
+    "predict": "/predict",
+    "docs": "/docs"
+  }
+}
+```
+
+### 7.2 Health Check (`GET /health`)
 **Request:**
 ```bash
 curl -X GET "http://localhost:9696/health"
@@ -228,7 +251,7 @@ curl -X GET "http://localhost:9696/health"
 }
 ```
 
-### 7.2 ETA Prediction (`POST /predict`)
+### 7.3 ETA Prediction (`POST /predict`)
 **Request:**
 ```bash
 curl -X POST "http://localhost:9696/predict" \
@@ -294,21 +317,115 @@ docker stop eta-service && docker rm eta-service
 
 ---
 
-## 9. Cloud Deployment & Teardown
+## 9. Cloud Deployment & Live Verification
 
-The service is pre-configured for cloud environments (Render, Railway, Google Cloud Run) with dynamic port binding (`int(os.getenv("PORT", 9696))`).
+The service is fully containerized and deployed to the cloud on **Render** as a public Docker web service with dynamic port binding (`int(os.getenv("PORT", 9696))`).
 
-### 9.1 Deploy to Render (Web Service)
+### 9.1 Live Cloud Service URLs
+- **Live Service Base URL:** [https://urban-food-delivery-eta-predictor.onrender.com](https://urban-food-delivery-eta-predictor.onrender.com)
+- **Health Check Endpoint:** [https://urban-food-delivery-eta-predictor.onrender.com/health](https://urban-food-delivery-eta-predictor.onrender.com/health)
+- **Interactive Swagger UI (/docs):** [https://urban-food-delivery-eta-predictor.onrender.com/docs](https://urban-food-delivery-eta-predictor.onrender.com/docs)
+
+> [!NOTE]
+> **Cold-Start Note for Peer Reviewers:**
+> The live service is hosted on Render's Free Tier. Free instances automatically spin down into a sleep state after **15 minutes of inactivity**. If visiting the live endpoints or sending the initial API request after an idle window, please allow **~50 seconds** for Render to spin up the container. Subsequent requests execute instantly in sub-milliseconds.
+
+### 9.2 Copy-Paste Live API Test Commands
+
+#### A. Linux / macOS / Git Bash (`curl`)
+```bash
+curl -X POST "https://urban-food-delivery-eta-predictor.onrender.com/predict" \
+     -H "Content-Type: application/json" \
+     -d '{
+       "Delivery_person_ID": "BANGRES19DEL01",
+       "Delivery_person_Age": 28.0,
+       "Delivery_person_Ratings": 4.8,
+       "Restaurant_latitude": 12.914264,
+       "Restaurant_longitude": 77.678400,
+       "Delivery_location_latitude": 12.924264,
+       "Delivery_location_longitude": 77.688400,
+       "Order_Date": "19-03-2022",
+       "Time_Orderd": "19:30:00",
+       "Time_Order_picked": "19:40:00",
+       "Weatherconditions": "Sunny",
+       "Road_traffic_density": "Jam",
+       "Vehicle_condition": 2,
+       "Type_of_order": "Meal",
+       "Type_of_vehicle": "motorcycle",
+       "multiple_deliveries": 1.0,
+       "Festival": "No",
+       "City": "Metropolitian"
+     }'
+```
+
+#### B. Windows PowerShell (`Invoke-RestMethod`)
+```powershell
+$body = @{
+    Delivery_person_ID = "BANGRES19DEL01"
+    Delivery_person_Age = 28.0
+    Delivery_person_Ratings = 4.8
+    Restaurant_latitude = 12.914264
+    Restaurant_longitude = 77.678400
+    Delivery_location_latitude = 12.924264
+    Delivery_location_longitude = 77.688400
+    Order_Date = "19-03-2022"
+    Time_Orderd = "19:30:00"
+    Time_Order_picked = "19:40:00"
+    Weatherconditions = "Sunny"
+    Road_traffic_density = "Jam"
+    Vehicle_condition = 2
+    Type_of_order = "Meal"
+    Type_of_vehicle = "motorcycle"
+    multiple_deliveries = 1.0
+    Festival = "No"
+    City = "Metropolitian"
+} | ConvertTo-Json
+
+Invoke-RestMethod -Uri "https://urban-food-delivery-eta-predictor.onrender.com/predict" -Method Post -Body $body -ContentType "application/json"
+```
+
+#### Verified Live Cloud Response (`200 OK`)
+```json
+{
+  "predicted_eta_min": 15.68,
+  "estimated_window_min": [
+    11.8,
+    19.6
+  ],
+  "model_version": "1.0.0"
+}
+```
+
+---
+
+### 9.3 Live Deployment Proof & Verification Screenshots
+
+#### 1. Render Live Web Service Dashboard
+Confirmed healthy deployment running on Render with active production URL:
+![Render Live Service Overview](assets/render_service_overview.png)
+
+#### 2. Render Zero-Error Docker Build & Deployment Logs
+Clean container build from Dockerfile with `libgomp1` and automated model training during build:
+![Render Deployment Logs](assets/render_deploy_logs.png)
+
+#### 3. Live Cloud Swagger UI Interactive Prediction
+Verified `200 OK` prediction on the live public Swagger documentation interface:
+![Live Cloud Swagger Prediction](assets/live_swagger_predict.png)
+
+---
+
+### 9.4 Deploying to Render from Scratch
 1. Fork or push this repository to GitHub.
-2. Sign in to [Render](https://render.com/) and click **New +** $\rightarrow$ **Web Service**.
-3. Connect your repository.
-4. Configure service settings:
+2. Sign in to [Render](https://render.com/) and navigate to **Dashboard** $\rightarrow$ **New +** $\rightarrow$ **Web Service**.
+3. Select your repository.
+4. Configure service parameters:
+   - **Name:** `urban-food-delivery-eta-predictor`
    - **Environment:** `Docker`
    - **Branch:** `main`
-   - **Plan:** `Free`
-5. Click **Create Web Service**. Render builds the Docker image and publishes the service at `https://urban-food-delivery-eta.onrender.com`.
+   - **Instance Type:** `Free`
+5. Click **Deploy Web Service**. Render builds the Dockerfile, runs `python train.py`, and publishes the API.
 
-### 9.2 Deploy to Google Cloud Run
+### 9.5 Deploying to Google Cloud Run (Alternative Cloud)
 ```bash
 # Configure project and region
 gcloud config set project YOUR_PROJECT_ID
@@ -325,9 +442,9 @@ gcloud run deploy urban-delivery-eta \
     --port 9696
 ```
 
-### 9.3 Cloud Teardown Instructions (Zero Cost Retention)
-To avoid unnecessary cloud billing after peer review:
-- **Render:** Open dashboard $\rightarrow$ Select `urban-food-delivery-eta` $\rightarrow$ Settings $\rightarrow$ Scroll down to **Delete Web Service** (or **Suspend**).
+### 9.6 Cloud Teardown Instructions (Zero Cost Retention)
+To avoid unnecessary cloud resource retention after peer review:
+- **Render:** Open dashboard $\rightarrow$ Select `urban-food-delivery-eta-predictor` $\rightarrow$ Settings $\rightarrow$ Scroll down to **Delete Web Service** (or **Suspend**).
 - **Google Cloud Run:**
   ```bash
   gcloud run services delete urban-delivery-eta --region us-central1 --quiet

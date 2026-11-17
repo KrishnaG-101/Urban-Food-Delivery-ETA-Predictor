@@ -13,6 +13,19 @@ from serve import app
 client = TestClient(app)
 
 
+def test_root_endpoint():
+  """Verifies GET / returns service information, version, and endpoints dictionary."""
+  response = client.get("/")
+  assert response.status_code == 200
+  data = response.json()
+  assert data["service"] == "Urban Food Delivery ETA Predictor"
+  assert data["version"] == "1.0.0"
+  assert data["status"] == "running"
+  assert data["endpoints"]["health"] == "/health"
+  assert data["endpoints"]["predict"] == "/predict"
+  assert data["endpoints"]["docs"] == "/docs"
+
+
 def test_health_check():
   """Verifies GET /health endpoint returns 200 OK and model is ready."""
   response = client.get("/health")

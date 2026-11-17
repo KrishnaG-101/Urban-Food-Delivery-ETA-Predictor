@@ -201,6 +201,25 @@ class HealthResponse(BaseModel):
 # Endpoints
 # ==============================================================================
 @app.get(
+    "/",
+    status_code=status.HTTP_200_OK,
+    tags=["System"],
+)
+def root() -> Dict[str, Any]:
+  """Friendly root endpoint describing service status and available routes."""
+  return {
+      "service": "Urban Food Delivery ETA Predictor",
+      "version": MODEL_VERSION,
+      "status": "running",
+      "endpoints": {
+          "health": "/health",
+          "predict": "/predict",
+          "docs": "/docs",
+      },
+  }
+
+
+@app.get(
     "/health",
     response_model=HealthResponse,
     status_code=status.HTTP_200_OK,
