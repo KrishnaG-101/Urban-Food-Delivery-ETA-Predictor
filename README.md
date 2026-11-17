@@ -50,13 +50,18 @@ pip install -r requirements.txt
 
 ## Running the API Service
 ```bash
-uv run uvicorn serve:app --reload --port 8000
+uv run uvicorn serve:app --reload --port 9696
 ```
-Visit `http://localhost:8000/docs` for interactive Swagger documentation.
+Visit `http://localhost:9696/docs` for interactive Swagger documentation.
+
+## Running Tests
+```bash
+uv run pytest
+```
 
 ## Docker Support
 ```bash
 docker build -t urban-food-delivery-eta .
-docker run -p 8000:8000 urban-food-delivery-eta
+docker run -p 9696:9696 urban-food-delivery-eta
 ```
 

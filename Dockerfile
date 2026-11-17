@@ -22,8 +22,8 @@ RUN uv pip install --no-cache --system -r requirements.txt
 COPY . .
 
 # Expose port for FastAPI server
-EXPOSE 8000
+EXPOSE 9696
 
 # Default command to run FastAPI app via Uvicorn
-CMD ["uvicorn", "serve:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "serve:app", "--host", "0.0.0.0", "--port", "9696"]
 
