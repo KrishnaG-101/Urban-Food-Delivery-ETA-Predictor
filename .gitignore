@@ -4,8 +4,10 @@ __pycache__/
 *$py.class
 *.pyc
 
-# Jupyter Notebook checkpoints
+# Jupyter Notebook checkpoints & local config
 .ipynb_checkpoints/
+.jupyter/
+.ipython/
 
 # Virtual environments
 .venv/
