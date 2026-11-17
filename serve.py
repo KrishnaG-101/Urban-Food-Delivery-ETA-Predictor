@@ -5,6 +5,7 @@ listening by default on 0.0.0.0:9696.
 """
 
 from contextlib import asynccontextmanager
+import os
 from typing import Any, Dict, List, Optional
 import uvicorn
 from fastapi import FastAPI, HTTPException, status
@@ -255,4 +256,5 @@ def predict(order: DeliveryOrderRequest) -> PredictionResponse:
 
 
 if __name__ == "__main__":
-  uvicorn.run("serve:app", host="0.0.0.0", port=9696, reload=False)
+  port = int(os.getenv("PORT", "9696"))
+  uvicorn.run("serve:app", host="0.0.0.0", port=port, reload=False)
